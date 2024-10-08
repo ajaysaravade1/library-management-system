@@ -46,6 +46,10 @@ def get_deleted_members():
 def create_book(book_data: dict):
     return models.create_book(book_data)
 
+@app.get("/lms/books/")
+def get_books():
+    return models.get_all_books()
+
 @app.get("/lms/books/{id}")
 def get_book(id: str):
     book = models.get_book(id)
@@ -60,3 +64,30 @@ def update_book(id: str, book_data: dict):
 @app.delete("/lms/books/{id}")
 def delete_book(id: str):
     return models.delete_book(id)
+
+
+#Member login endpoints
+
+@app.get("/lms/member/books")
+def get_member_books():
+    return models.get_member_books()
+
+@app.post("/lms/borrow/")
+def borrow_book(borrow_data: dict):
+    return models.borrow(borrow_data)
+
+
+@app.put("/lms/borrow/{id}")
+def return_book(id:int):
+    return models.return_book(id)
+
+###### delete member account
+@app.delete("/lms/member/{id}")
+def delete_member(id: int):
+    return models.delete_member(id)
+
+@app.get("/lms/member/bookhistory/{id}")
+def view_member_book_history(id: int):
+    return models.view_member_book_history(id)
+
+

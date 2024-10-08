@@ -57,22 +57,19 @@ def get_all_members():
 
 def get_member_history():
     cursor = database.get_cursor()
-    query = """SELECT Members.id, Members.username, books.title, borrow.borrow_date, borrow.return_date
-               FROM Members
-               JOIN borrow ON Members.id = borrow.member_id
-               JOIN books ON books.id = borrow.book_id"""
+    query = "SELECT * FROM Members UNION SELECT * FROM Deleted_Members"
     cursor.execute(query)
     return cursor.fetchall()
 
 def get_active_members():
     cursor = database.get_cursor()
-    query = "SELECT * FROM Members WHERE is_deleted = 0"
+    query = "SELECT * FROM Members"
     cursor.execute(query)
     return cursor.fetchall()
 
 def get_deleted_members():
     cursor = database.get_cursor()
-    query = "SELECT * FROM Members WHERE is_deleted = 1"
+    query = "SELECT * FROM Deleted_Members"
     cursor.execute(query)
     return cursor.fetchall()
 
@@ -92,6 +89,13 @@ def create_book(book_data):
     ))
     database.connection.commit()
     return {"message": "Book created successfully"}
+
+def get_all_books():
+    cursor = database.get_cursor()
+    query = "SELECT * FROM Books"
+    cursor.execute(query)
+    return cursor.fetchall()
+
 
 def get_book(book_id):
     cursor = database.get_cursor()
@@ -120,3 +124,45 @@ def delete_book(book_id):
     cursor.execute(query, (book_id,))
     database.connection.commit()
     return {"message": "Book deleted successfully"}
+
+
+def get_member_books():
+    cursor = database.get_member_cursor()
+    query = "SELECT * FROM Books"
+    cursor.execute(query)    
+    return cursor.fetchall() 
+
+def borrow(borrow_data):
+    cursor = database.get_member_cursor()
+    query = """INSERT INTO Borrow (id, book_id, member_id, borrow_date, return_date)
+               VALUES (%s, %s, %s, %s, %s)"""
+    cursor.execute(query, (
+        borrow_data['id'], 
+        borrow_data['book_id'], 
+        borrow_data['member_id'], 
+        borrow_data['borrow_date'], 
+        borrow_data['return_date']    
+    ))
+    database.connection.commit()
+    return {"message": "Borrow entry created successfully"}
+
+def return_book(id):
+    cursor = database.get_member_cursor()
+    query = """UPDATE Borrow SET return_date = NOW() WHERE id = %s"""
+    cursor.execute(query,(id))
+    database.connection.commit()
+    return {"message": "Book returned successfully"}
+
+def delete_member(id):
+    cursor = database.get_member_cursor()
+    query = "DELETE FROM Members WHERE id = %s"
+    cursor.execute(query, (id,))
+    database.connection.commit()
+    return {"message": "Memeber deleted successfully"}
+
+
+def view_member_book_history(id):
+    cursor = database.get_member_cursor()
+    query = "SELECT * FROM Borrow WHERE member_id = %s"
+    cursor.execute(query)    
+    return cursor.fetchall() 
